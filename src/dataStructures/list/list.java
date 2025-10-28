@@ -10,5 +10,6 @@ public interface list<T> {
     boolean last();
     boolean empty();
     boolean full();
+    void display();
 }
 
