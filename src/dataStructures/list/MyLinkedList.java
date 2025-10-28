@@ -2,13 +2,12 @@ package dataStructures.list;
 
 public class MyLinkedList<T> implements list<T> {
     private Node head , current;
-    private int size , maxsize;
+    private int size;
 
 
-    public MyLinkedList(int max){
+    public MyLinkedList(){
         head = current = null;
         size = 0;
-        maxsize = max;
     }
     public void findFirst(){
         if(!empty())
@@ -56,12 +55,23 @@ public class MyLinkedList<T> implements list<T> {
         }
     }
     public boolean full(){
-        return size == maxsize;
+        return false;
     }
     public boolean empty(){
         return head == null;
     }
     public boolean last(){
         return !empty() && current.next == null;
+    }
+
+    @Override
+    public void display() {
+        if(head == null)
+            return;
+        Node n = head;
+        while(n != null) {
+            System.out.println(n.data);
+            n = n.next;
+        }
     }
 }
