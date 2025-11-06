@@ -2,23 +2,31 @@ package app;
 
 import dataStructures.list.MyLinkedList;
 
-public class Products {
-    private static int idGenerator;
+public class Product {
+    private static int idGenerator = 150;
     private final int id;
     private String name;
     private int stock;
     private double price;
 
-    private MyLinkedList<Reviews> reviews;
+    private MyLinkedList<Review> reviews;
 
 
-    public Products(String name , double price , int stock){
-        id = idGenerator++;
+    public Product(String name , double price , int stock){
+        id = ++idGenerator;
         this.name = name;
         this.price = price;
         this.stock = stock;
 
-        this.reviews = new MyLinkedList<Reviews>();
+        this.reviews = new MyLinkedList<Review>();
+    }
+    public Product(int id, String name , double price , int stock){
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+
+        this.reviews = new MyLinkedList<Review>();
     }
 
 
@@ -26,8 +34,8 @@ public class Products {
         // Add/edit review.
         // Get an average rating for product.
 
-    public void addReview(int rating ,String comment){//Time Complexity : O(1)
-        reviews.insert(new Reviews(rating , comment));
+    public void addReview(Review r){//Time Complexity : O(1)
+        reviews.insert(r);
     }
     public void editReview(int rating , String comment){//Time Complexity : O(n)
         //to be implemented later
@@ -88,13 +96,13 @@ public class Products {
         this.setStock(stock);
     }
 
-    public MyLinkedList<Reviews> getReviews() {
+    public MyLinkedList<Review> getReviews() {
         return reviews;
     }
 
     @Override
     public String toString() {
-        return String.format("[%-2s] : %-12s , Price : %-8s SAR , Stock : %-4s " , id , name , price , stock);
+        return String.format("[%-3s] : %-25s , Price : %-8s SAR , Stock : %-4s  %-4.1f stars" , id , name , price , stock , this.averageRating());
 
     }
 }

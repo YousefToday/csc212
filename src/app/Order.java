@@ -1,83 +1,60 @@
 package app;
 
-import java.time.LocalDate;
 import dataStructures.list.MyArrayList;
 
 public class Order {
-  private int orderId;
-  private int customerId;
-  private MyArrayList<Products> products;
-  private double totalPrice;
-  private LocalDate orderDate;
-  private String status;
-  private String customerReference;
+    private static int idGenerator = 400;
+    private int id, cId;
+    private MyArrayList<Product> products;
+    private double totalPrice;
+    private String status, date;
 
-  public Order(int orderId, int customerId, String customerReference, MyArrayList<Products> products,
-      double totalPrice, LocalDate orderDate, String status) {
-    this.orderId = orderId;
-    this.customerId = customerId;
-    this.customerReference = customerReference;
-    this.products = products;
-    this.totalPrice = totalPrice;
-    this.orderDate = orderDate;
-    this.status = status;
-  }
+    public Order(int id , int cId , MyArrayList products , String date ,String status) {
 
-  // Getters
-  public int getOrderId() {
-    return orderId;
-  }
+        this.id = id;
+        this.cId = cId;
+        this.products = products;
+        this.date = date;
+        this.status = status;
+        totalPrice = getTotalPrice();
+    }
+    public Order(int cId , MyArrayList products , String date ,String status) {
 
-  public int getCustomerId() {
-    return customerId;
-  }
+        this.id = ++idGenerator;
+        this.cId = cId;
+        this.products = products;
+        this.date = date;
+        this.status = status;
+        totalPrice = getTotalPrice();
+    }
+    private double getTotalPrice(){
+        double total = 0;
+        products.findFirst();
+        while(!products.last()){
+            total += products.retrieve().getPrice();
+            products.findNext();
+        }
+        return total + products.retrieve().getPrice();
+    }
+    public void setStatus(String status){
+        this.status = status;
+    }
 
-  public String getCustomerReference() {
-    return customerReference;
-  }
+    public int getId() {
+        return id;
+    }
 
-  public MyArrayList<Products> getProducts() {
-    return products;
-  }
+    public String getDate() {
+        return date;
+    }
 
-  public double getTotalPrice() {
-    return totalPrice;
-  }
+    @Override
+    public String toString() {
+        String str =  "Order ID : " + id + " , Date : " + date + ", Status : " +status + "\t{";
 
-  public LocalDate getOrderDate() {
-    return orderDate;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  // Setters
-  public void setOrderId(int orderId) {
-    this.orderId = orderId;
-  }
-
-  public void setCustomerId(int customerId) {
-    this.customerId = customerId;
-  }
-
-  public void setCustomerReference(String customerReference) {
-    this.customerReference = customerReference;
-  }
-
-  public void setProducts(MyArrayList<Products> products) {
-    this.products = products;
-  }
-
-  public void setTotalPrice(double totalPrice) {
-    this.totalPrice = totalPrice;
-  }
-
-  public void setOrderDate(LocalDate orderDate) {
-    this.orderDate = orderDate;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
-  }
+                for(int i = 0 ; i < products.size() ; i++)
+                    str += products.retrieve().getName();
+                str += "}";
+        return str;
+    }
 }
