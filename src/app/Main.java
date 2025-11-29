@@ -33,6 +33,7 @@ public class Main {
                 System.out.println("your choice out of range , please try again");
                 continue;
             }
+            scanner.nextLine();
             return choice;
         }
     }
@@ -43,7 +44,7 @@ public class Main {
         store.loadReviews();
         store.loadOrders();
         while (true) {
-            System.out.println("\t\t\t\tWELCOME TO " + store.name);
+            System.out.println("\t\t\t\tWELCOME TO " + store.getName());
             System.out.println("\t\t\tplaese inter your choice:\n1-I am a user\n2-I am an administrator");
             int choice = choice(2);
             switch (choice) {
@@ -69,7 +70,7 @@ public class Main {
             switch (choice) {
                 case 1:
                     System.out.print("Enter your email: ");
-                    String email = scanner.next();
+                    String email = scanner.nextLine();
                     Customer user = store.login(email);
 
                     if (user == null) {
@@ -77,19 +78,19 @@ public class Main {
                         continue;
                     }
 
-                    // Logged-in Menu
                     while (true) {
                         printBoarder();
 
-                        System.out.println("Welcome " + user);
+                        System.out.println("Welcome" + user);
                         store.displayTopRatedProducts();
-                        System.out.println("\n\n1) View Products");
+                        System.out.println("\n1) View Products");
                         System.out.println("2) Place Order");
                         System.out.println("3) View Order History");
                         System.out.println("4) Add Review");
                         System.out.println("5) Edit Review");
                         System.out.println("6) Logout");
                         int op = choice(6);
+
 
                         switch (op) {
                             case 1:
@@ -117,7 +118,7 @@ public class Main {
                                     switch (oChoice) {
                                         case 1:
                                             System.out.print("Enter the product name: ");
-                                            String name = scanner.next();
+                                            String name = scanner.nextLine();
                                             p = store.searchProduct(name);
                                             if (p != null) {
                                                 cart.insert(p);
@@ -165,7 +166,6 @@ public class Main {
 
                                 System.out.print("Rating (1-5): ");
                                 int r = choice(5);
-                                scanner.nextLine();
                                 System.out.print("Comment: ");
                                 String cmt = scanner.nextLine();
 
@@ -174,10 +174,23 @@ public class Main {
                                 continue;
 
                             case 5:
+                                System.out.print("Enter product ID: ");
+                                int pId = choice(Integer.MAX_VALUE);
 
+                                if(store.searchProduct(pId) == null) {
+                                    System.out.println("there is no product with id: " + pId);
+                                    continue;
+                                }
+                                System.out.print("New rating: ");
+                                int rating = choice(5);
+
+                                System.out.print("New comment: ");
+                                String comment = scanner.nextLine();
+
+                                store.editReview(user.getId(), pId, rating, comment);
                                 continue;
                             case 6:
-                                break; // logout
+                                break;
                         }
                         break;
                     }
@@ -185,9 +198,9 @@ public class Main {
 
                 case 2:
                     System.out.print("Enter name: ");
-                    String n = scanner.next();
+                    String n = scanner.nextLine();
                     System.out.print("Enter email: ");
-                    String e = scanner.next();
+                    String e = scanner.nextLine();
                     if(store.signUp(n, e))
                         System.out.println("Account created.");
                     else
@@ -247,7 +260,7 @@ public class Main {
                                 }
                                 continue;
                             case 3:
-                                store.getOrders().display();
+//                                store.getOrders().display();
                                 continue;
                             case 4:
                                 break;
@@ -267,7 +280,7 @@ public class Main {
                         switch (productChoice) {
                             case 1:
                                 System.out.print("Name: ");
-                                String name = scanner.next();
+                                String name = scanner.nextLine();
                                 System.out.print("Price: ");
                                 double price = scanner.nextDouble();
                                 System.out.print("Stock: ");
@@ -284,7 +297,7 @@ public class Main {
                                 System.out.print("Product ID: ");
                                 int pid = choice(Integer.MAX_VALUE);
                                 System.out.print("New Name: ");
-                                String newName = scanner.next();
+                                String newName = scanner.nextLine();
                                 System.out.print("New Price: ");
                                 double newPrice = scanner.nextDouble();
                                 System.out.print("New Stock: ");
@@ -341,8 +354,10 @@ public class Main {
                         System.out.println("1) All Orders between two dates");
                         System.out.println("2) Cancel an order by id");
                         System.out.println("3) Search an order by id");
-                        System.out.println("4) Back");
-                        int viewChoice = choice(4);
+                        System.out.println("4) Update order status");
+                        System.out.println("5) Serve pending orders");
+                        System.out.println("6) Back");
+                        int viewChoice = choice(6);
                         switch (viewChoice) {
                             case 1:
                                 System.out.println("use YYYY/MM/DD format for your input");
@@ -369,6 +384,87 @@ public class Main {
                                     System.out.println("there is Order with id: " + oId);
                                 continue;
                             case 4:
+                                System.out.print("Enter Order ID: ");
+                                int orId = choice(Integer.MAX_VALUE);
+
+                                if (store.searchOrder(orId) == null) {
+                                    System.out.println("No order found with ID: " + orId);
+                                    break;
+                                }
+
+                                System.out.println("Choose new status:");
+                                System.out.println("1) pending");
+                                System.out.println("2) shipped");
+                                System.out.println("3) delivered");
+                                System.out.println("4) cancelled");
+
+                                int statusChoice = choice(4);
+
+                                String newStatus = switch (statusChoice) {
+                                    case 2 -> "shipped";
+                                    case 3 -> "delivered";
+                                    case 4 -> "cancelled";
+                                    default -> "pending";
+                                };
+                                store.updateOrderStatus(orId, newStatus);
+                                System.out.println("Order status has been updated");
+                                continue;
+                            case 5:
+//                                MyLinkedList<Order> orders = store.getOrders();
+//                                if (orders.empty()) {
+//                                    System.out.println("No orders in the system.");
+//                                    break;
+//                                }
+//                                System.out.println("\nPending Orders:");
+//                                orders.findFirst();
+//                                boolean anyPending = false;
+//                                while (true) {
+//                                    Order o = orders.retrieve();
+//                                    if (o.getStatus().equalsIgnoreCase("pending")) {
+//                                        System.out.println("Order ID: " + o.getId() + "  " + o.getStatus());
+//                                        anyPending = true;
+//                                    }
+//                                    if (orders.last()) break;
+//                                    orders.findNext();
+//                                }
+//
+//                                if (!anyPending) {
+//                                    System.out.println("There are no pending orders to serve.");
+//                                    break;
+//                                }
+//
+//                                System.out.print("Enter Order ID to serve: ");
+//                                int orderId = choice(Integer.MAX_VALUE);
+//
+//                                orders.findFirst();
+//                                boolean found = false;
+//                                while (true) {
+//                                    Order o = orders.retrieve();
+//                                    if (o.getId() == orderId && o.getStatus().equalsIgnoreCase("pending")) {
+//
+//                                        MyArrayList<Product> cart = o.getProducts();
+//                                        if (!cart.empty()) {
+//                                            cart.findFirst();
+//                                            while (true) {
+//                                                cart.retrieve().sell();
+//                                                if (cart.last()) break;
+//                                                cart.findNext();
+//                                            }
+//                                        }
+//
+//                                        o.setStatus("shipped");
+//                                        System.out.println("Order " + orderId + " has been served.");
+//                                        found = true;
+//                                        break;
+//                                    }
+//                                    if (orders.last()) break;
+//                                    orders.findNext();
+//                                }
+//                                if (!found)
+//                                    System.out.println("No pending order found with ID: " + orderId);
+
+                                continue;
+                            case 6:
                                 break;
                         }
                         break;

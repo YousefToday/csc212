@@ -34,13 +34,10 @@ public class Product {
         // Add/edit review.
         // Get an average rating for product.
 
-    public void addReview(Review r){//Time Complexity : O(1)
+    public void addReview(Review r){
         reviews.insert(r);
     }
-    public void editReview(int rating , String comment){//Time Complexity : O(n)
-        //to be implemented later
-    }
-    public double averageRating() { //Time Complexity : O(n)
+    public double averageRating() {
         if(reviews.empty())
             return 0;
         reviews.findFirst();
@@ -72,9 +69,6 @@ public class Product {
     }
     public void setStock(int stock) {
         this.stock = stock;
-    }
-    public void addStock(int amount){
-        stock += amount;
     }
     public void sell(){
         if(stock > 0)

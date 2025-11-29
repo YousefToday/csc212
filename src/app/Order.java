@@ -9,15 +9,6 @@ public class Order {
     private double totalPrice;
     private String status, date;
 
-    public Order(int id , int cId , MyArrayList products , String date ,String status) {
-
-        this.id = id;
-        this.cId = cId;
-        this.products = products;
-        this.date = date;
-        this.status = status;
-        totalPrice = getTotalPrice();
-    }
     public Order(int cId , MyArrayList products , String date ,String status) {
 
         this.id = ++idGenerator;
@@ -27,6 +18,15 @@ public class Order {
         this.status = status;
         totalPrice = getTotalPrice();
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public MyArrayList<Product> getProducts() {
+        return products;
+    }
+
     private double getTotalPrice(){
         double total = 0;
         products.findFirst();
