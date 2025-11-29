@@ -45,10 +45,7 @@ public class Customer {
     public int getId() {
         return id;
     }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    
 
     public MyLinkedList<Review> getReviews() {
         return reviews;
@@ -58,25 +55,10 @@ public class Customer {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public MyLinkedList<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(MyLinkedList<Order> orders) {
-        this.orders = orders;
-    }
 
     @Override
     public String toString() {

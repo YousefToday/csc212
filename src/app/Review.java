@@ -5,7 +5,7 @@ public class Review {
     private int id;
     private int rating;
     private String comment;
-    Customer customer;
+    private Customer customer;
 
     public Review(Customer customer , int rating , String comment){
         id = ++idGenetator;
@@ -26,6 +26,10 @@ public class Review {
 
     public void setRating(int rating) {
         this.rating = rating;
+    }
+
+    public Customer getCustomer() {
+        return customer;
     }
 
     public int getRating(){
