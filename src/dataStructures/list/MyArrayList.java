@@ -94,4 +94,10 @@ public class MyArrayList<T> implements list<T> {
         size++;
         current = size - 1;
     }
+
+    public void wipe() {
+        for (int i = 0; i < size; i++) nodes[i] = null;
+        size = 0;
+        current = -1;
+    }
 }

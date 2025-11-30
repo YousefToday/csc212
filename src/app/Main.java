@@ -69,7 +69,7 @@ public class Main {
 
             switch (choice) {
                 case 1:
-                    System.out.print("Enter your email: ");
+                    System.out.print("Enter your Username: ");
                     String email = scanner.nextLine();
                     Customer user = store.login(email);
 
@@ -84,38 +84,79 @@ public class Main {
                         System.out.println("Welcome" + user);
                         store.displayTopRatedProducts();
                         System.out.println("\n1) View Products");
-                        System.out.println("2) Place Order");
+                        System.out.println("2) Place an Order");
                         System.out.println("3) View Order History");
                         System.out.println("4) Add Review");
                         System.out.println("5) Edit Review");
                         System.out.println("6) Logout");
-                        int op = choice(6);
+                        choice = choice(6);
 
 
-                        switch (op) {
+                        switch (choice) {
                             case 1:
-                                store.displayProducts();
+                                while(true) {
+                                    store.display("productsbyid");
 
-                                System.out.println("\n1) View reviews for a product");
-                                System.out.println("2) Back");
-                                int ch = choice(2);
+                                    System.out.println("\n1) View reviews for a product");
+                                    System.out.println("2) filters");
+                                    System.out.println("3) Back");
+                                    choice = choice(3);
 
-                                if(ch == 1) {
-                                    System.out.print("Enter product ID: ");
-                                    int pid = choice(Integer.MAX_VALUE);
-                                    if(store.searchProduct(pid) != null)
-                                        store.searchProduct(pid).getReviews().display();
-                                    else System.out.println("there is no customer with id: " + pid);
+                                    switch (choice) {
+                                        case 1:
+                                            System.out.print("Enter product ID: ");
+                                            int pid = choice(Integer.MAX_VALUE);
+                                            if (store.searchProduct(pid) != null)
+                                                store.searchProduct(pid).getReviews().display();
+                                            else System.out.println("there is no customer with id: " + pid);
+                                            continue;
+                                        case 2:
+                                            while (true) {
+                                                System.out.println("1) sort by id");
+                                                System.out.println("2) sort by name");
+                                                System.out.println("3) sort by price");
+                                                System.out.println("4) select a price interval");
+                                                System.out.println("5) back");
+                                                choice = choice(5);
+                                                switch (choice) {
+                                                    case 1:
+                                                        store.display("productbyid");
+                                                        continue;
+                                                    case 2:
+                                                        store.display("productbyname");
+                                                        continue;
+                                                    case 3:
+                                                        store.display("productbyprice");
+                                                        continue;
+                                                    case 4:
+                                                        System.out.println("minimum price range :");
+                                                        double min = scanner.nextDouble();
+                                                        System.out.println("maximum price range :");
+                                                        double max = scanner.nextDouble();
+                                                        scanner.nextLine();
+                                                        store.selectPriceRange(min , max);
+                                                        continue;
+                                                    case 5:
+                                                        break;
+                                                }
+                                                break;
+                                            }
+                                            continue;
+                                        case 3:
+                                            break;
+
+                                    }
+                                    break;
                                 }
                                 continue;
-
                             case 2:
                                 MyArrayList<Product> cart = new MyArrayList<>(100);
+                                cart.display();
                                 while (true) {
-                                    System.out.println("Add product by:\n1) Name\n2) ID\n3) Finish");
-                                    int oChoice = choice(3);
+                                    System.out.println("Add product by:\n1) Name\n2) ID\n3) place order\n4)back");
+                                    choice = choice(3);
                                     Product p;
-                                    switch (oChoice) {
+                                    switch (choice) {
                                         case 1:
                                             System.out.print("Enter the product name: ");
                                             String name = scanner.nextLine();
@@ -145,6 +186,7 @@ public class Main {
                                             Order o = new Order(user.getId(), cart, date , "pending");
                                             store.order(user.getId(), o);
                                             System.out.println("Order placed.");
+                                            cart.wipe();
                                             break;
                                     }
                                     break;

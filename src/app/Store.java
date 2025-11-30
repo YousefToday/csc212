@@ -15,9 +15,12 @@ public class Store {
     private String name;
     private AVLTree<Product> productsById;
     private AVLTree<Product> productsByName;
+    private AVLTree<Product> productsByPrice;
+    private AVLTree<Product> productsByStock;
     private AVLTree<Customer> customersById;
     private AVLTree<Customer> customersByName;
     private AVLTree<Order> ordersById;
+    private AVLTree<Order> ordersByDate;
 
     public Store(String name) {
         this.name = name;
@@ -28,18 +31,21 @@ public class Store {
 
         this.productsById = new AVLTree<>();
         this.productsByName = new AVLTree<>();
+        this.productsByPrice = new AVLTree<>();
+        this.productsByStock = new AVLTree<>();
         this.customersById = new AVLTree<>();
         this.customersByName = new AVLTree<>();
         this.ordersById = new AVLTree<>();
+        this.ordersByDate = new AVLTree<>();
     }
-    public String getName(){
+
+    public String getName() {
         return name;
     }
 
 
-
     //loaders
-    public void loadProducts(){
+    public void loadProducts() {
         InputStream in = Store.class.getResourceAsStream("/resources/products.csv");
 
         if (in == null) {
@@ -60,11 +66,14 @@ public class Store {
             Product p = new Product(id, name, price, stock);
             productsById.insert(new Key(id), p);
             productsByName.insert(new Key(name), p);
+            productsByPrice.insert(new Key(priceKey(p.getPrice(), p.getId())), p);
+            productsByStock.insert(new Key(stockKey(p.getStock(), p.getId())), p);
         }
         file.close();
         System.out.println("Products loaded successfully.");
     }
-    public void loadOrders(){
+
+    public void loadOrders() {
         InputStream in = Store.class.getResourceAsStream("/resources/orders.csv");
         if (in == null) {
             System.out.println("orders load failed");
@@ -98,12 +107,14 @@ public class Store {
             Customer c = searchCustomer(customerId);
             if (c != null)
                 c.addOrder(o);
-            ordersById.insert(new Key(orderId),o);
+            ordersById.insert(new Key(orderId), o);
+            ordersByDate.insert(new Key(dateKey(o.getDate(), o.getId())), o);
         }
         file.close();
         System.out.println("Orders loaded successfully.");
     }
-    public void loadReviews () {
+
+    public void loadReviews() {
         InputStream in = Store.class.getResourceAsStream("/resources/reviews.csv");
         if (in == null) {
             System.out.println("reviews load failed");
@@ -123,7 +134,7 @@ public class Store {
             Customer c = searchCustomer(cId);
             if (c == null) continue;
 
-            Product p = searchProduct(cId);
+            Product p = searchProduct(pId);
             if (p == null) continue;
 
             Review r = new Review(rId, c, rating, comment);
@@ -133,7 +144,8 @@ public class Store {
         file.close();
         System.out.println("Reviews loaded successfully.");
     }
-    public void loadCustomers () {
+
+    public void loadCustomers() {
         InputStream in = Store.class.getResourceAsStream("/resources/customers.csv");
         if (in == null) {
             System.out.println("customers load failed");
@@ -228,7 +240,7 @@ public class Store {
 //    o Register new customer.
 //    o Place a new order for a specific customer.
 //    o View order history.
-    public boolean signUp (String name, String email){
+    public boolean signUp(String name, String email) {
         if (searchCustomer(name) != null)
             return false;
         Customer c = new Customer(name, email);
@@ -236,75 +248,92 @@ public class Store {
         customersByName.insert(new Key(name), c);
         return true;
     }
-    public Customer login (String name){
+
+    public Customer login(String name) {
         return searchCustomer(name);
     }
-    public void order ( int cId, Order order){
+
+    public void order(int cId, Order order) {
         Customer c = searchCustomer(cId);
         if (c != null) {
             c.addOrder(order);
             ordersById.insert(new Key(order.getId()), order);
+            ordersByDate.insert(new Key(dateKey(order.getDate(), order.getId())), order);
         } else System.out.println("there is no customer with Id:" + cId);
     }
-    public void orderHistory ( int cId){
+
+    public void orderHistory(int cId) {
         Customer c = searchCustomer(cId);
         if (c != null) c.viewOrderHistory();
         else System.out.println("there is no customer with Id: " + cId);
     }
-    public Customer searchCustomer ( int id){
+
+    public Customer searchCustomer(int id) {
         return customersById.find(new Key(id));
     }
-    public Customer searchCustomer (String name){
+
+    public Customer searchCustomer(String name) {
         return customersByName.find(new Key(name));
     }
 
-//    Order Operations:
+    //    Order Operations:
 //    o Create/cancel order.(create is in customer)
 //    o Update order status.
 //    o Search order by ID.
-    public void updateOrderStatus ( int oId, String status){
-    Order o = searchOrder(oId);
-    if(o != null)
-        o.setStatus(status);
-    else System.out.println("there is no order with id : " + oId);
+    public void updateOrderStatus(int oId, String status) {
+        Order o = searchOrder(oId);
+        if (o != null)
+            o.setStatus(status);
+        else System.out.println("there is no order with id : " + oId);
     }
-    public void cancelOrder (int id){
+
+    public void cancelOrder(int id) {
         Order o = searchOrder(id);
-        if(o == null) {
+        if (o == null) {
             System.out.println("there is no Order with ID: " + id);
             return;
         }
         ordersById.remove(new Key(id));
+        ordersByDate.remove(new Key(dateKey(o.getDate(), o.getId())));
         System.out.println("Order: [" + id + "]" + " has been removed successfully");
     }
-    public Order searchOrder ( int oId) {
+
+    public Order searchOrder(int oId) {
         return ordersById.find(new Key(oId));
     }
-
 
 
     //    product Operations:
 //      o Add/remove/update products.
 //      o Search by ID or name (linear).
 //      o Track out-of-stock products.
-    public void addProduct (String name,double price, int stock){
-        Product p = new Product(name , price , stock);
+    public void addProduct(String name, double price, int stock) {
+        Product p = new Product(name, price, stock);
         productsById.insert(new Key(p.getId()), p);
         productsByName.insert(new Key(name), p);
+        productsByPrice.insert(new Key(priceKey(p.getPrice(), p.getId())), p);
+        productsByStock.insert(new Key(stockKey(p.getStock(), p.getId())), p);
+
+
     }
-    public void removeProduct ( int id){
+
+    public void removeProduct(int id) {
         Product p = searchProduct(id);
-        if(p == null) {
+        if (p == null) {
             System.out.println("there is no product with ID: " + id);
             return;
         }
         productsById.remove(new Key(id));
         productsByName.remove(new Key(p.getName()));
-        System.out.println("Product: " + name + "[" + id + "]" + " has been removed successfully");
+        productsByPrice.remove(new Key(priceKey(p.getPrice(), p.getId())));
+        productsByStock.remove(new Key(stockKey(p.getStock(), p.getId())));
+
+        System.out.println("Product: " + p.getName() + "[" + id + "]" + " has been removed successfully");
     }
-    public void updateProduct ( int id, String fName,double fPrice, int fStock){
+
+    public void updateProduct(int id, String fName, double fPrice, int fStock) {
         Product p = searchProduct(id);
-        if(p == null) {
+        if (p == null) {
             System.out.println("there is no product with ID: " + id);
             return;
         }
@@ -320,31 +349,31 @@ public class Store {
             return;
         }
         productsByName.remove(new Key(oldName));
-        p.setProduct(fName , fPrice ,fStock);
-        productsByName.insert(new Key(newName) , p);
+        productsByPrice.remove(new Key(priceKey(p.getPrice(), p.getId())));
+        productsByStock.remove(new Key(stockKey(p.getStock(), p.getId())));
+
+        p.setProduct(newName, fPrice, fStock);
+        productsByName.insert(new Key(newName), p);
+        productsByPrice.insert(new Key(priceKey(p.getPrice(), p.getId())), p);
+        productsByStock.insert(new Key(stockKey(p.getStock(), p.getId())), p);
+
         System.out.println(p + ".\n has been successfully updated to:");
         System.out.println(p);
     }
-    public Product searchProduct ( int id){
+
+    public Product searchProduct(int id) {
         return productsById.find(new Key(id));
     }
-    public Product searchProduct (String name){
+
+    public Product searchProduct(String name) {
         return productsByName.find(new Key(name));
     }
-    public MyArrayList<Product> outOfStockProducts () {
-        final int MAX = 100;
-        MyArrayList<Product> outOfStock = new MyArrayList<>(MAX);
-        //to be implemented
-        return outOfStock;
-    }
-    public void displayProducts () {
-        productsByName.traverse("preorder");
-    }
+
 
     //• Review Operations:
     //o Add/edit review.
     //o Get an average rating for product.(inside product)
-    public void addReview ( int rId, int pId, int cId, int rating, String comment){
+    public void addReview(int rId, int pId, int cId, int rating, String comment) {
         Customer c = searchCustomer(cId);
         if (c == null) {
             System.out.println("there is no customer with Id : " + cId);
@@ -359,7 +388,8 @@ public class Store {
         p.addReview(r);
         c.addReview(r);
     }
-    public void addReview ( int pId, int cId, int rating, String comment){
+
+    public void addReview(int pId, int cId, int rating, String comment) {
         Customer c = searchCustomer(cId);
         if (c == null) {
             System.out.println("there is no customer with Id : " + cId);
@@ -374,7 +404,8 @@ public class Store {
         p.addReview(r);
         c.addReview(r);
     }
-    public void editReview ( int cId, int pId, int rating, String comment){
+
+    public void editReview(int cId, int pId, int rating, String comment) {
         Product p = searchProduct(pId);
         if (p == null) {
             System.out.println("Product not found.");
@@ -407,7 +438,7 @@ public class Store {
 //• All Orders between two dates
 //• Given two customers IDs, show a list of common products that have been reviewed with an average rating of more than 4 out of 5.
 
-        public void displayTopRatedProducts () {
+    public void displayTopRatedProducts() {
 //        Product best1 = null, best2 = null, best3 = null;
 //        while (true) {
 //            if (best1 == null || products.retrieve().averageRating() > best1.averageRating()) {
@@ -434,7 +465,7 @@ public class Store {
 
     }
 
-        public void displayOrdersBetweenDates (String startDate, String endDate){
+//    public void displayOrdersBetweenDates(String startDate, String endDate) { //phase 1
 //        if (orders.empty()) {
 //            System.out.println("No orders available yet");
 //            return;
@@ -458,25 +489,45 @@ public class Store {
 //        if (!found) {
 //            System.out.println("No orders in this date range.");
 //        }
-    }
-        private boolean hasReviewed (Product p,int cId){
-        MyLinkedList<Review> list = p.getReviews();
-        if (list.empty()) return false;
+//    }
 
-        list.findFirst();
-        while (true) {
-            if (list.retrieve().getCustomer().getId() == cId)
-                return true;
+    public void display(String tree) {
 
-            if (list.last()) break;
-            list.findNext();
+        switch (tree.toLowerCase()) {
+            case "productsbyid" -> productsById.traverse("inorder");
+            case "productsbyname" -> productsByName.traverse("inorder");
+            case "productsbyprice" -> productsByPrice.traverse("inorder");
+            case "customersbyid" -> customersById.traverse("inorder");
+            case "customersbyname" -> customersByName.traverse("inorder");
+            case "ordersbyid" -> ordersById.traverse("inorder");
+            case "ordersbydate" -> ordersByDate.traverse("inorder");
         }
-        return false;
     }
 
+    public void selectPriceRange(double low, double high) {
+        MyLinkedList<Product> list = new MyLinkedList<>();
+        productsByPrice.Select(new Key(priceLoStr(low)), new Key(priceHiStr(high)), list);
+        list.display();
+    }
 
+    public void selectDateRange(String low, String high) {
+        if (dateLoStr(low).compareTo(dateHiStr(high)) > 0) {
+            String t = low;
+            low = high;
+            high = t;
+        }
+        MyLinkedList<Order> list = new MyLinkedList<>();
+        ordersByDate.Select(new Key(dateLoStr(low)), new Key(dateHiStr(high)), list);
+        list.display();
+    }
 
-    public void showCommonReviewedProducts (int cId1, int cId2){
+    public void selectOutOfStockProducts() {
+        MyLinkedList<Product> list = new MyLinkedList<>();
+        productsByStock.Select(new Key(0), new Key(0), list);
+        list.display();
+    }
+
+    public void showCommonReviewedProducts(int cId1, int cId2) {
 
         if (searchCustomer(cId1) == null) {
             System.out.println("Customer [" + cId1 + "] not found.");
@@ -492,7 +543,59 @@ public class Store {
             System.out.println("No common >4 rated products were found.");
         }
     }
-    public AVLTree<Product> getProducts() {
-        return productsByName;
+
+
+    //composite key issue
+    private static String priceKey(double price, int pid) {
+        int pc = (int) Math.round(price * 100);
+        String a = String.format("%09d", pc);   // price cents, 9 digits
+        String b = String.format("%010d", pid); // id, 10 digits
+        return a + ":" + b;
+    }
+
+    private static String priceLoStr(double p) {
+        int pc = (int) Math.round(p * 100);
+        return String.format("%09d:0000000000", pc);
+    }
+
+    private static String priceHiStr(double p) {
+        int pc = (int) Math.round(p * 100);
+        return String.format("%09d:9999999999", pc);
+    }
+
+    private static String normalizeDate(String iso) {
+        //"YYYY-MM-DD"
+        return iso.substring(0, 4) + iso.substring(5, 7) + iso.substring(8, 10);
+    }
+
+    // Exact composite key for an order (unique)
+    private static String dateKey(String dateIso, int orderId) {
+        String ymd = normalizeDate(dateIso);            // 8 digits
+        String id = String.format("%010d", orderId);   // 10 digits
+        return ymd + ":" + id;                          // "YYYYMMDD:oooooooooo"
+    }
+
+    // Inclusive lower/upper bounds for a date (span all order IDs that day)
+    private static String dateLoStr(String dateIso) {
+        String ymd = normalizeDate(dateIso);
+        return ymd + ":0000000000";
+    }
+
+    private static String dateHiStr(String dateIso) {
+        String ymd = normalizeDate(dateIso);
+        return ymd + ":9999999999";
+    }
+
+    private static String stockKey(int stock, int pid) {
+        // non-negative stock assumed
+        return String.format("%010d:%010d", stock, pid);
+    }
+
+    private static String stockLoStr(int stock) {
+        return String.format("%010d:0000000000", stock);
+    }
+
+    private static String stockHiStr(int stock) {
+        return String.format("%010d:9999999999", stock);
     }
 }
