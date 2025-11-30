@@ -11,5 +11,6 @@ public interface list<T> {
     boolean empty();
     boolean full();
     void display();
+    void wipe();
 }
 

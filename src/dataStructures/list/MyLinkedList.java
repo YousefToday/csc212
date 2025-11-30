@@ -1,7 +1,7 @@
 package dataStructures.list;
 
 public class MyLinkedList<T> implements list<T> {
-    private Node head , current;
+    private Node<T> head , current;
     private int size;
 
 
@@ -73,5 +73,9 @@ public class MyLinkedList<T> implements list<T> {
             System.out.println(n.data);
             n = n.next;
         }
+    }
+    public void wipe(){
+        current = head = null;
+        size = 0;
     }
 }

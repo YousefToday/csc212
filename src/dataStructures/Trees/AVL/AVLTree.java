@@ -157,4 +157,13 @@ public class AVLTree<T> {
         else if(s.toLowerCase().equals("postorder"))
             traverse(Order.postOrder , root);
     }
+    public void Select(Key lo, Key hi, dataStructures.list.MyLinkedList<T> out) {
+        collectRangeRec(root, lo, hi, out);
+    }
+    private void collectRangeRec(Node<T> n, Key lo, Key hi, dataStructures.list.MyLinkedList<T> out) { //inclusive
+        if (n == null) return;
+        if (lo.compare(n.key) < 0)  collectRangeRec(n.left,  lo, hi, out);
+        if (lo.compare(n.key) <= 0 && hi.compare(n.key) >= 0) out.insert(n.val);
+        if (hi.compare(n.key) > 0)  collectRangeRec(n.right, lo, hi, out);
+    }
 }
