@@ -48,10 +48,8 @@ public class MyLinkedList<T> implements list<T> {
                 }
                 n.next = current.next;
             }
-            if(current.next == null) //put the current at the next node
-                current = head;
-            else
-                current = current.next;
+            current = (head == null) ? null : (current != null && current.next != null ? current.next : head);
+            size--;
         }
     }
     public boolean full(){
