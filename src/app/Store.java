@@ -497,6 +497,7 @@ public class Store {
             case "productsbyid" -> productsById.traverse("inorder");
             case "productsbyname" -> productsByName.traverse("inorder");
             case "productsbyprice" -> productsByPrice.traverse("inorder");
+            case "productsbystock" -> productsByStock.traverse("inorder");
             case "customersbyid" -> customersById.traverse("inorder");
             case "customersbyname" -> customersByName.traverse("inorder");
             case "ordersbyid" -> ordersById.traverse("inorder");
@@ -538,6 +539,7 @@ public class Store {
             return;
         }
         boolean found = false;
+
 
         if (!found) {
             System.out.println("No common >4 rated products were found.");

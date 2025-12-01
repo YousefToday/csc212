@@ -96,7 +96,7 @@ public class Product {
 
     @Override
     public String toString() {
-        return String.format("[%-3s] : %-25s , Price : %-8s SAR , Stock : %-4s  %-4.1f stars" , id , name , price , stock , this.averageRating());
+        return String.format("[%-3s] : %-25s , Price : %-8s SAR , Stock : %-4s  %-4.1f stars (%d)" , id , name , price , stock , this.averageRating() ,reviews.getSize());
 
     }
 }
