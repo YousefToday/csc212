@@ -41,14 +41,15 @@ public class Product {
         if(reviews.empty())
             return 0;
         reviews.findFirst();
-        double sum = 0;
-        int count = 1;
-        while (!reviews.last()){
+        double sum = 0.0;
+        int count = 0;
+        while (true){
             sum += reviews.retrieve().getRating();
             count++;
+            if(reviews.last())
+                break;
             reviews.findNext();
         }
-        sum += reviews.retrieve().getRating(); //last element
         return sum/count;
     }
 
@@ -70,12 +71,6 @@ public class Product {
     public void setStock(int stock) {
         this.stock = stock;
     }
-    public void sell(){
-        if(stock > 0)
-            stock--;
-        else
-            System.out.println("sorry, "+ name + " is out of stock!");
-    }
 
     public double getPrice() {
         return price;
@@ -92,6 +87,40 @@ public class Product {
 
     public MyLinkedList<Review> getReviews() {
         return reviews;
+    }
+    public void displayReviews(String sortBy) {
+        if (reviews.empty()) { System.out.println("No reviews."); return; }
+        int n = reviews.getSize();
+        Review[] a = toArray(reviews, n);
+
+        String by = (sortBy == null) ? "" : sortBy.trim().toLowerCase();
+        if (by.equals("cid")) {
+            // sort by cid (insertion)
+            for (int i = 1; i < n; i++) {
+                Review key = a[i]; int k = key.getCustomer().getId(); int j = i - 1;
+                while (j >= 0 && a[j].getCustomer().getId() > k) { a[j+1] = a[j]; j--; }
+                a[j+1] = key;
+            }
+        } else if (by.equals("rating")) {
+            // sort by rating  / /
+            for (int i = 1; i < n; i++) {
+                Review key = a[i]; int k = key.getRating(); int j = i - 1;
+                while (j >= 0 && a[j].getRating() > k) { a[j+1] = a[j]; j--; }
+                a[j+1] = key;
+            }
+        }
+
+        for (int i = 0; i < n; i++) System.out.println(a[i]);
+    }
+
+    private static Review[] toArray(MyLinkedList<Review> list, int n) {
+        Review[] a = new Review[n];
+        list.findFirst();
+        for (int i = 0; i < n; i++) {
+            a[i] = list.retrieve();
+            if (!list.last()) list.findNext();
+        }
+        return a;
     }
 
     @Override

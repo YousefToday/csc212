@@ -34,10 +34,10 @@ public class MyArrayList<T> implements list<T> {
         if (!full()) {
             for (int i = size - 1; i > current; i--)
                 nodes[i + 1] = nodes[i];
+            current++;
+            nodes[current] = val;
+            size++;
         }
-        current++;
-        nodes[current] = val;
-        size++;
     }
 
     public void remove() {

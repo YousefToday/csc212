@@ -103,7 +103,7 @@ public class Store {
                 if (p != null)
                     cart.insert(p);
             }
-            Order o = new Order(orderId, cart, date, status);
+            Order o = new Order(customerId, cart, date, status);
             Customer c = searchCustomer(customerId);
             if (c != null)
                 c.addOrder(o);
@@ -301,6 +301,72 @@ public class Store {
     public Order searchOrder(int oId) {
         return ordersById.find(new Key(oId));
     }
+    public void listPendingOrders() {
+        MyLinkedList<Order> list = new MyLinkedList<>();
+        ordersById.Select(new Key(Integer.MIN_VALUE), new Key(Integer.MAX_VALUE), list);
+        if (list.empty()) {
+            System.out.println("No orders yet.");
+            return;
+        }
+        boolean any = false;
+        list.findFirst();
+        while (true) {
+            Order o = list.retrieve();
+            if (o != null && "Pending".equalsIgnoreCase(o.getStatus())) {
+                System.out.println(o);
+                any = true;
+            }
+            if (list.last()) break;
+            list.findNext();
+        }
+        if (!any) System.out.println("No pending orders.");
+    }
+
+    public void serveOrder(int orderId) {
+        Order o = searchOrder(orderId);
+        if (o == null) {
+            System.out.println("No order with ID: " + orderId);
+            return;
+        }
+        if (!"Pending".equalsIgnoreCase(o.getStatus())) {
+            System.out.println("Only Pending orders can be served.");
+            return;
+        }
+
+        MyArrayList<Product> prods = o.getProducts();
+        if (prods == null || prods.empty()) {
+            o.setStatus("Shipped");
+            System.out.println("Order [" + orderId + "] served (no items).");
+            return;
+        }
+        boolean ok = true;
+        StringBuilder missing = new StringBuilder();
+        prods.findFirst();
+        while (true) {
+            Product p = prods.retrieve();
+            if (p != null && p.getStock() <= 0) {
+                ok = false;
+                if (missing.length() > 0) missing.append(", ");
+                missing.append(p.getName()).append(" [").append(p.getId()).append("]");
+            }
+            if (prods.last()) break;
+            prods.findNext();
+        }
+        if (!ok) {
+            System.out.println("Cannot serve order [" + orderId + "]. Out of stock: " + missing);
+            return;
+        }
+        prods.findFirst();
+        while (true) {
+            Product p = prods.retrieve();
+            if (p != null) sellProduct(p.getId());
+            if (prods.last()) break;
+            prods.findNext();
+        }
+
+        o.setStatus("Shipped");
+        System.out.println("Order [" + orderId + "] served successfully (status: Shipped).");
+    }
 
 
     //    product Operations:
@@ -359,6 +425,13 @@ public class Store {
 
         System.out.println(p + ".\n has been successfully updated to:");
         System.out.println(p);
+    }
+    public void sellProduct(int productId) {
+        Product p = searchProduct(productId);
+        if (p == null || p.getStock() <= 0) return;
+        productsByStock.remove(new Key(stockKey(p.getStock(), p.getId())));
+        p.setStock(p.getStock() - 1);
+        productsByStock.insert(new Key(stockKey(p.getStock(), p.getId())), p);
     }
 
     public Product searchProduct(int id) {
@@ -439,30 +512,37 @@ public class Store {
 //• Given two customers IDs, show a list of common products that have been reviewed with an average rating of more than 4 out of 5.
 
     public void displayTopRatedProducts() {
-//        Product best1 = null, best2 = null, best3 = null;
-//        while (true) {
-//            if (best1 == null || products.retrieve().averageRating() > best1.averageRating()) {
-//                best3 = best2;
-//                best2 = best1;
-//                best1 = products.retrieve();
-//            } else if (best2 == null || products.retrieve().averageRating() > best2.averageRating()) {
-//                best3 = best2;
-//                best2 = products.retrieve();
-//            } else if (best3 == null || products.retrieve().averageRating() > best3.averageRating()) {
-//                best3 = products.retrieve();
-//            }
-//            if (products.last())
-//                break;
-//            products.findNext();
-//        }
-//        System.out.println("TOP 3 Products:");
-//        if (best1 != null)
-//            System.out.printf("1st place : [%3d] %-25s Rating :%4.1f\n", best1.getId(), best1.getName(), best1.averageRating());
-//        if (best2 != null)
-//            System.out.printf("2nd place : [%3d] %-25s Rating :%4.1f\n", best2.getId(), best2.getName(), best2.averageRating());
-//        if (best3 != null)
-//            System.out.printf("3rd place : [%3d] %-25s Rating :%4.1f\n", best3.getId(), best3.getName(), best3.averageRating());
+        MyLinkedList<Product> list = new MyLinkedList<>();
+        // collect all products via ID index (min..max)
+        productsById.Select(new Key(Integer.MIN_VALUE), new Key(Integer.MAX_VALUE), list);
 
+        if (list.empty()) { System.out.println("No products yet."); return; }
+
+        Product best1 = null, best2 = null, best3 = null;
+
+        list.findFirst();
+        while (true) {
+            Product p = list.retrieve();
+            double r = p.averageRating();
+
+            if (best1 == null || r > best1.averageRating() ||
+               (best1 != null && r == best1.averageRating() && p.getId() < best1.getId())) {
+                best3 = best2; best2 = best1; best1 = p;
+            } else if (best2 == null || r > best2.averageRating() ||
+                      (best2 != null && r == best2.averageRating() && p.getId() < best2.getId())) {
+                best3 = best2; best2 = p;
+            } else if (best3 == null || r > best3.averageRating() ||
+                      (best3 != null && r == best3.averageRating() && p.getId() < best3.getId())) {
+                best3 = p;
+            }
+            if (list.last()) break;
+            list.findNext();
+        }
+
+        System.out.println("TOP 3 Products:");
+        if (best1 != null) System.out.printf("1st place : [%3d] %-25s Rating : %4.1f%n", best1.getId(), best1.getName(), best1.averageRating());
+        if (best2 != null) System.out.printf("2nd place : [%3d] %-25s Rating : %4.1f%n", best2.getId(), best2.getName(), best2.averageRating());
+        if (best3 != null) System.out.printf("3rd place : [%3d] %-25s Rating : %4.1f%n", best3.getId(), best3.getName(), best3.averageRating());
     }
 
 //    public void displayOrdersBetweenDates(String startDate, String endDate) { //phase 1
@@ -524,26 +604,50 @@ public class Store {
 
     public void selectOutOfStockProducts() {
         MyLinkedList<Product> list = new MyLinkedList<>();
-        productsByStock.Select(new Key(0), new Key(0), list);
+        productsByStock.Select(new Key(stockLoStr(0)), new Key(stockHiStr(0)), list);
         list.display();
     }
 
     public void showCommonReviewedProducts(int cId1, int cId2) {
+        Customer c1 = searchCustomer(cId1);
+        if (c1 == null) { System.out.println("Customer [" + cId1 + "] not found."); return; }
+        Customer c2 = searchCustomer(cId2);
+        if (c2 == null) { System.out.println("Customer [" + cId2 + "] not found."); return; }
 
-        if (searchCustomer(cId1) == null) {
-            System.out.println("Customer [" + cId1 + "] not found.");
-            return;
-        }
-        if (searchCustomer(cId2) == null) {
-            System.out.println("Customer [" + cId2 + "] not found.");
-            return;
-        }
+        MyLinkedList<Product> all = new MyLinkedList<>();
+        productsById.Select(new Key(Integer.MIN_VALUE), new Key(Integer.MAX_VALUE), all);
+
+        if (all.empty()) { System.out.println("No products."); return; }
+
         boolean found = false;
 
-
-        if (!found) {
-            System.out.println("No common >4 rated products were found.");
+        all.findFirst();
+        while (true) {
+            Product p = all.retrieve();
+            if (p != null && p.averageRating() > 4.0) {
+                boolean has1 = false, has2 = false;
+                MyLinkedList<Review> revs = p.getReviews();
+                if (!revs.empty()) {
+                    revs.findFirst();
+                    while (true) {
+                        Review r = revs.retrieve();
+                        int cid = r.getCustomer().getId();
+                        if (cid == cId1) has1 = true;
+                        else if (cid == cId2) has2 = true;
+                        if (has1 && has2) break;
+                        if (revs.last()) break;
+                        revs.findNext();
+                    }
+                }
+                if (has1 && has2) {
+                    System.out.println(p);
+                    found = true;
+                }
+            }
+            if (all.last()) break;
+            all.findNext();
         }
+        if (!found) System.out.println("No common >4 rated products were found.");
     }
 
 
