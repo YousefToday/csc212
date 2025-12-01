@@ -78,4 +78,8 @@ public class MyLinkedList<T> implements list<T> {
         current = head = null;
         size = 0;
     }
+
+    public int getSize() {
+        return size;
+    }
 }

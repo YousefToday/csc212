@@ -38,6 +38,9 @@ public class Review {
     public String getComment() {
         return comment;
     }
+    public int getId() {
+        return id;
+    }
 
     @Override
     public String toString() {
@@ -47,7 +50,7 @@ public class Review {
 
 
         return "--------------------------------\n"
-                + customer.getName()+ "\t" +stars + "\n\n"
+                + '[' + id + ']' + " " + customer.getName()+ " " +stars + "\n\n"
                 +comment;
     }
 }

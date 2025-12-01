@@ -86,10 +86,8 @@ public class Main {
                         System.out.println("\n1) View Products");
                         System.out.println("2) Place an Order");
                         System.out.println("3) View Order History");
-                        System.out.println("4) Add Review");
-                        System.out.println("5) Edit Review");
-                        System.out.println("6) Logout");
-                        choice = choice(6);
+                        System.out.println("4) Logout");
+                        choice = choice(4);
 
 
                         switch (choice) {
@@ -102,13 +100,83 @@ public class Main {
                                     System.out.println("3) Back");
                                     choice = choice(3);
 
+
                                     switch (choice) {
                                         case 1:
                                             System.out.print("Enter product ID: ");
                                             int pid = choice(Integer.MAX_VALUE);
-                                            if (store.searchProduct(pid) != null)
-                                                store.searchProduct(pid).getReviews().display();
-                                            else System.out.println("there is no customer with id: " + pid);
+                                            Product p = store.searchProduct(pid);
+                                            if (p != null) {
+                                                while (true) {
+                                                    p.getReviews().display();
+
+                                                    System.out.println("1) Add Review");
+                                                    System.out.println("2) Edit Review");
+                                                    System.out.println("3) Back");
+                                                    choice = choice(3);
+
+                                                    switch (choice) {
+                                                        case 1:
+                                                            System.out.print("Rating (1-5): ");
+                                                            int r = choice(5);
+                                                            System.out.print("Comment: ");
+                                                            String cmt = scanner.nextLine();
+                                                            store.addReview(pid, user.getId(), r, cmt);
+                                                            System.out.println("Review added.");
+                                                            continue;
+                                                        case 2:
+                                                            MyLinkedList<Review> revs = p.getReviews();
+                                                            if (revs.empty()) {
+                                                                System.out.println("No reviews yet.");
+                                                                continue;
+                                                            }
+                                                            boolean any = false;
+                                                            revs.findFirst();
+                                                            while (true) {
+                                                                Review rv = revs.retrieve();
+                                                                if (rv.getCustomer().getId() == user.getId()) {
+                                                                    any = true;
+                                                                    System.out.println(rv);
+                                                                }
+                                                                if(revs.last()) break;
+                                                                revs.findNext();
+                                                            }
+                                                            if (!any) {
+                                                                System.out.println("You have no reviews on this product.");
+                                                                continue;
+                                                            }
+
+                                                            System.out.print("Enter your review ID to edit: ");
+                                                            int rid = choice(Integer.MAX_VALUE);
+
+                                                            boolean found = false;
+                                                            revs.findFirst();
+                                                            while (true) {
+                                                                Review rv = revs.retrieve();
+                                                                if (rv.getId() == rid && rv.getCustomer().getId() == user.getId()) {
+                                                                    found = true;
+
+                                                                    System.out.print("New rating: ");
+                                                                    int nr = choice(5);
+                                                                    rv.setRating(nr);
+                                                                    System.out.print("New comment: ");
+                                                                    String nc = scanner.nextLine().trim();
+                                                                    rv.setComment(nc);
+                                                                    System.out.println("Review [" + rid + "] has been successfully updated.");
+                                                                    break;
+                                                                }
+                                                                if (revs.last()) break;
+                                                                revs.findNext();
+                                                            }
+                                                            if (!found)
+                                                                System.out.println("That review ID is not yours on this product.");
+                                                            continue;
+                                                        case 3:
+                                                            break;
+                                                    }
+                                                    break;
+                                                }
+                                            }
                                             continue;
                                         case 2:
                                             while (true) {
@@ -120,13 +188,13 @@ public class Main {
                                                 choice = choice(5);
                                                 switch (choice) {
                                                     case 1:
-                                                        store.display("productbyid");
+                                                        store.display("productsbyid");
                                                         continue;
                                                     case 2:
-                                                        store.display("productbyname");
+                                                        store.display("productsbyname");
                                                         continue;
                                                     case 3:
-                                                        store.display("productbyprice");
+                                                        store.display("productsbyprice");
                                                         continue;
                                                     case 4:
                                                         System.out.println("minimum price range :");
@@ -187,6 +255,8 @@ public class Main {
                                             store.order(user.getId(), o);
                                             System.out.println("Order placed.");
                                             cart.wipe();
+                                            continue;
+                                        case 4:
                                             break;
                                     }
                                     break;
@@ -195,43 +265,7 @@ public class Main {
                             case 3:
                                 store.orderHistory(user.getId());
                                 continue;
-
                             case 4:
-                                System.out.print("Enter product ID: ");
-                                int pid = choice(Integer.MAX_VALUE);
-
-                                Product p = store.searchProduct(pid);
-                                if(p == null) {
-                                    System.out.println("Product not found.");
-                                    continue;
-                                }
-
-                                System.out.print("Rating (1-5): ");
-                                int r = choice(5);
-                                System.out.print("Comment: ");
-                                String cmt = scanner.nextLine();
-
-                                store.addReview(pid , user.getId(), r , cmt);
-                                System.out.println("Review added.");
-                                continue;
-
-                            case 5:
-                                System.out.print("Enter product ID: ");
-                                int pId = choice(Integer.MAX_VALUE);
-
-                                if(store.searchProduct(pId) == null) {
-                                    System.out.println("there is no product with id: " + pId);
-                                    continue;
-                                }
-                                System.out.print("New rating: ");
-                                int rating = choice(5);
-
-                                System.out.print("New comment: ");
-                                String comment = scanner.nextLine();
-
-                                store.editReview(user.getId(), pId, rating, comment);
-                                continue;
-                            case 6:
                                 break;
                         }
                         break;
@@ -258,59 +292,211 @@ public class Main {
     private static void adminMenu() {
         while (true) {
             printBoarder();
-            System.out.println("1) View");
+            System.out.println("\n1) View");
             System.out.println("2) Products Operations");
-            System.out.println("3) Customers Operations");
-            System.out.println("4) Orders Operations");
-            System.out.println("5) Logout");
-            int choice = choice(5);
+            System.out.println("3) Orders Operations");
+            System.out.println("4) Logout");
+            int choice = choice(4);
 
             switch (choice) {
                 case 1:
                     while (true) {
                         printBoarder();
-                        System.out.println("1) View all products");
-                        System.out.println("2) View Out-of-Stock Products");
+                        System.out.println("\n1) View all products");
+                        System.out.println("2) View all customers");
                         System.out.println("3) View All Orders");
                         System.out.println("4) Back");
-                        int viewChoice = choice(4);
-                        switch (viewChoice) {
+                        choice = choice(4);
+                        switch (choice) {
                             case 1:
-                                store.displayProducts();
-                                System.out.println("\n1) View reviews for a product");
-                                System.out.println("2) Back");
-                                int ch = choice(2);
-
-                                if(ch == 1) {
-                                    System.out.print("Enter product ID: ");
-                                    int pid = choice(Integer.MAX_VALUE);
-                                    if(store.searchProduct(pid) != null)
-                                        store.searchProduct(pid).getReviews().display();
-                                    else System.out.println("there is no product with id: " + pid);
+                                while (true) {
+                                    store.display("productsbyid");
+                                    System.out.println("\n1) search for a product");
+                                    System.out.println("1) View reviews for a product");
+                                    System.out.println("2) filters");
+                                    System.out.println("3) Back");
+                                    choice = choice(3);
+                                    switch (choice) {
+                                        case 1:
+                                            while(true){
+                                                System.out.println("1)search by id\n2)search by name\n3)back");
+                                                choice = choice(3);
+                                                switch (choice){
+                                                    case 1: {
+                                                        System.out.println("Enter the product ID");
+                                                        int pId = choice(Integer.MAX_VALUE);
+                                                        Product p = store.searchProduct(pId);
+                                                        if(p == null){
+                                                            System.out.println("there is no product with ID: " + pId);
+                                                        }
+                                                        System.out.println(p);
+                                                        continue;
+                                                    }
+                                                    case 2:
+                                                        System.out.println("Enter the product name");
+                                                        String pName = scanner.nextLine();
+                                                        Product p = store.searchProduct(pName);
+                                                        if(p == null){
+                                                            System.out.println("there is no product with name: " + pName);
+                                                        }
+                                                        System.out.println(p);
+                                                        continue;
+                                                    case 3:
+                                                        break;
+                                                }
+                                                break;
+                                            }
+                                            continue;
+                                        case 2:
+                                            System.out.print("Enter product ID: ");
+                                            int pid = choice(Integer.MAX_VALUE);
+                                            Product p = store.searchProduct(pid);
+                                            if (p != null)
+                                                p.getReviews().display();
+                                            else System.out.println("invalid product id");
+                                            continue;
+                                        case 3:
+                                            while (true) {
+                                                System.out.println("\n1) sort by id");
+                                                System.out.println("2) sort by name");
+                                                System.out.println("3) sort by price");
+                                                System.out.println("4) sort by stock");
+                                                System.out.println("5) select a price interval");
+                                                System.out.println("6) back");
+                                                choice = choice(6);
+                                                switch (choice) {
+                                                    case 1:
+                                                        store.display("productsbyid");
+                                                        continue;
+                                                    case 2:
+                                                        store.display("productsbyname");
+                                                        continue;
+                                                    case 3:
+                                                        store.display("productsbyprice");
+                                                        continue;
+                                                    case 4:
+                                                        store.display("productsbystock");
+                                                        continue;
+                                                    case 5:
+                                                        System.out.println("minimum price range :");
+                                                        double min = scanner.nextDouble();
+                                                        System.out.println("maximum price range :");
+                                                        double max = scanner.nextDouble();
+                                                        scanner.nextLine();
+                                                        store.selectPriceRange(min, max);
+                                                        continue;
+                                                    case 6:
+                                                        break;
+                                                }
+                                                break;
+                                            }
+                                            continue;
+                                        case 4:
+                                            break;
+                                    }
+                                    break;
                                 }
                                 continue;
                             case 2:
-                                MyArrayList<Product> out = store.outOfStockProducts();
-                                if (out.empty()) System.out.println("No products are out of stock.");
-                                else {
-                                    out.findFirst();
-                                    while (true) {
-                                        System.out.println(out.retrieve());
-                                        if (out.last()) break;
-                                        out.findNext();
+                                while (true) {
+                                    store.display("customersbyid");
+
+                                    System.out.println("\n1) search for a customer");
+                                    System.out.println("2) filters");
+                                    System.out.println("3) Back");
+                                    choice = choice(3);
+                                    switch (choice) {
+                                        case 1:
+                                            while(true){
+                                                System.out.println("1)search by id\n2)search by name\n3)back");
+                                                choice = choice(3);
+                                                switch (choice){
+                                                    case 1: {
+                                                        System.out.println("Enter the customer ID");
+                                                        int cId = choice(Integer.MAX_VALUE);
+                                                        Customer c = store.searchCustomer(cId);
+                                                        if(c == null){
+                                                            System.out.println("there is no customer with ID: " + cId);
+                                                        }
+                                                        System.out.println(c);
+                                                        continue;
+                                                    }
+                                                    case 2:
+                                                        System.out.println("Enter the customer username");
+                                                        String cName = scanner.nextLine();
+                                                        Customer c = store.searchCustomer(cName);
+                                                        if(c == null){
+                                                            System.out.println("there is no customer with name: " + cName);
+                                                        }
+                                                        System.out.println(c);
+                                                        continue;
+                                                    case 3:
+                                                        break;
+                                                }
+                                               break;
+                                            }
+                                            continue;
+                                        case 2:
+                                            while (true) {
+                                                System.out.println("1) sort by id");
+                                                System.out.println("2) sort by name");
+                                                System.out.println("3) extract a customer reviews");
+                                                System.out.println("4) extract a common reviewed products with an average rating more that 4");
+                                                System.out.println("6) back");
+                                                choice = choice(6);
+                                                switch (choice) {
+                                                    case 1:
+                                                        store.display("customersbyid");
+                                                        continue;
+                                                    case 2:
+                                                        store.display("customersbyname");
+                                                        continue;
+                                                    case 3: {
+                                                        System.out.println("Enter the customer ID:");
+                                                        int cId = choice(Integer.MAX_VALUE);
+                                                        Customer c = store.searchCustomer(cId);
+                                                        if (c == null) {
+                                                            System.out.println("there is no customer with ID: " + cId);
+                                                            continue;
+                                                        }
+                                                        c.getReviews().display();
+                                                        continue;
+                                                    }
+                                                    case 4:
+                                                        System.out.println("Enter the first customer ID: ");
+                                                        int cId1 = choice(Integer.MAX_VALUE);
+                                                        System.out.println("Enter the first customer ID: ");
+                                                        int cId2 = choice(Integer.MAX_VALUE);
+                                                        store.showCommonReviewedProducts(cId1 , cId2);
+                                                        continue;
+                                                    case 5:
+                                                        System.out.println("minimum price range :");
+                                                        double min = scanner.nextDouble();
+                                                        System.out.println("maximum price range :");
+                                                        double max = scanner.nextDouble();
+                                                        scanner.nextLine();
+                                                        store.selectPriceRange(min, max);
+                                                        continue;
+                                                    case 6:
+                                                        break;
+                                                }
+                                                break;
+                                            }
+                                            continue;
+                                        case 3:
+                                            break;
                                     }
+                                    break;
                                 }
                                 continue;
                             case 3:
-//                                store.getOrders().display();
                                 continue;
                             case 4:
                                 break;
                         }
                         break;
                     }
-                    break;
-
+                    continue;
                 case 2:
                     while (true) {
                         printBoarder();
@@ -351,175 +537,17 @@ public class Main {
                         }
                         break;
                     }
-                    break;
+                    continue;
                 case 3:
-                    while (true) {
-                        printBoarder();
-                        System.out.println("1) extract all reviews from one customer by id");
-                        System.out.println("2) list of common products that have been reviewed by 2 customers with an average rating of more than 4 out of 5");
-                        System.out.println("3) Back");
-                        int viewChoice = choice(4);
-                        switch (viewChoice) {
-                            case 1:
-                                System.out.print("Enter Customer ID to extract their reviews: ");
-                                int id = choice(Integer.MAX_VALUE);
-                                if(store.searchCustomer(id) == null){
-                                    System.out.println("there is no customer with id: " + id);
-
-                                }else
-                                    store.searchCustomer(id).getReviews().display();
-                                continue;
-                            case 2:
-                                System.out.print("Enter the first Customer ID");
-                                int cid1 = choice(Integer.MAX_VALUE);
-                                if(store.searchCustomer(cid1) == null) {
-                                System.out.println("there is no customer with id: " + cid1);
-                                continue;
-                            }
-                                System.out.print("Enter the second Customer ID");
-                                int cid2 = choice(Integer.MAX_VALUE);
-                                if(store.searchCustomer(cid2) == null) {
-                                    System.out.println("there is no customer with id: " + cid2);
-                                    continue;
-                                }
-                                store.showCommonReviewedProducts(cid1 , cid2);
-                                continue;
-                            case 3:
-                                break;
-                        }
-                        break;
-                    }
-                    break;
+                    continue;
                 case 4:
-                    while (true) {
-                        printBoarder();
-                        System.out.println("1) All Orders between two dates");
-                        System.out.println("2) Cancel an order by id");
-                        System.out.println("3) Search an order by id");
-                        System.out.println("4) Update order status");
-                        System.out.println("5) Serve pending orders");
-                        System.out.println("6) Back");
-                        int viewChoice = choice(6);
-                        switch (viewChoice) {
-                            case 1:
-                                System.out.println("use YYYY/MM/DD format for your input");
-                                System.out.println("Starting date: ");
-                                String start = scanner.next();
-                                System.out.println("ending date: ");
-                                String end = scanner.next();
-                                store.displayOrdersBetweenDates(start , end);
-                                continue;
-                            case 2:
-                                System.out.print("Enter an Order ID to Cancel: ");
-                                int id = choice(Integer.MAX_VALUE);
-                                if(store.searchOrder(id) == null){
-                                    System.out.println("there is no order with id: " + id);
-                                }
-                                store.cancelOrder(id);
-                                continue;
-                            case 3:
-                                System.out.print("Enter an Order ID to extract: ");
-                                int oId = choice(Integer.MAX_VALUE);
-                                if(store.searchOrder(oId) != null)
-                                    System.out.print(store.searchOrder(oId));
-                                else
-                                    System.out.println("there is Order with id: " + oId);
-                                continue;
-                            case 4:
-                                System.out.print("Enter Order ID: ");
-                                int orId = choice(Integer.MAX_VALUE);
-
-                                if (store.searchOrder(orId) == null) {
-                                    System.out.println("No order found with ID: " + orId);
-                                    break;
-                                }
-
-                                System.out.println("Choose new status:");
-                                System.out.println("1) pending");
-                                System.out.println("2) shipped");
-                                System.out.println("3) delivered");
-                                System.out.println("4) cancelled");
-
-                                int statusChoice = choice(4);
-
-                                String newStatus = switch (statusChoice) {
-                                    case 2 -> "shipped";
-                                    case 3 -> "delivered";
-                                    case 4 -> "cancelled";
-                                    default -> "pending";
-                                };
-                                store.updateOrderStatus(orId, newStatus);
-                                System.out.println("Order status has been updated");
-                                continue;
-                            case 5:
-//                                MyLinkedList<Order> orders = store.getOrders();
-//                                if (orders.empty()) {
-//                                    System.out.println("No orders in the system.");
-//                                    break;
-//                                }
-//                                System.out.println("\nPending Orders:");
-//                                orders.findFirst();
-//                                boolean anyPending = false;
-//                                while (true) {
-//                                    Order o = orders.retrieve();
-//                                    if (o.getStatus().equalsIgnoreCase("pending")) {
-//                                        System.out.println("Order ID: " + o.getId() + "  " + o.getStatus());
-//                                        anyPending = true;
-//                                    }
-//                                    if (orders.last()) break;
-//                                    orders.findNext();
-//                                }
-//
-//                                if (!anyPending) {
-//                                    System.out.println("There are no pending orders to serve.");
-//                                    break;
-//                                }
-//
-//                                System.out.print("Enter Order ID to serve: ");
-//                                int orderId = choice(Integer.MAX_VALUE);
-//
-//                                orders.findFirst();
-//                                boolean found = false;
-//                                while (true) {
-//                                    Order o = orders.retrieve();
-//                                    if (o.getId() == orderId && o.getStatus().equalsIgnoreCase("pending")) {
-//
-//                                        MyArrayList<Product> cart = o.getProducts();
-//                                        if (!cart.empty()) {
-//                                            cart.findFirst();
-//                                            while (true) {
-//                                                cart.retrieve().sell();
-//                                                if (cart.last()) break;
-//                                                cart.findNext();
-//                                            }
-//                                        }
-//
-//                                        o.setStatus("shipped");
-//                                        System.out.println("Order " + orderId + " has been served.");
-//                                        found = true;
-//                                        break;
-//                                    }
-//                                    if (orders.last()) break;
-//                                    orders.findNext();
-//                                }
-//                                if (!found)
-//                                    System.out.println("No pending order found with ID: " + orderId);
-
-                                continue;
-                            case 6:
-                                break;
-                        }
-                        break;
-                    }
                     break;
-                case 5:
-                    return;
+
             }
+            break;
         }
     }
-
-    private static void printBoarder() {
-        System.out.println("===========================================");
-    }
+        private static void printBoarder () {
+                System.out.println("===========================================");
+            }
 }
-
