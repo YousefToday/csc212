@@ -417,13 +417,13 @@ public class Store {
         productsByName.remove(new Key(oldName));
         productsByPrice.remove(new Key(priceKey(p.getPrice(), p.getId())));
         productsByStock.remove(new Key(stockKey(p.getStock(), p.getId())));
-
+        System.out.println(p + ".\n has been successfully updated to:");
         p.setProduct(newName, fPrice, fStock);
         productsByName.insert(new Key(newName), p);
         productsByPrice.insert(new Key(priceKey(p.getPrice(), p.getId())), p);
         productsByStock.insert(new Key(stockKey(p.getStock(), p.getId())), p);
 
-        System.out.println(p + ".\n has been successfully updated to:");
+
         System.out.println(p);
     }
     public void sellProduct(int productId) {

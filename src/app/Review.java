@@ -50,7 +50,7 @@ public class Review {
 
 
         return "--------------------------------\n"
-                + '[' + id + ']' + " " + customer.getName()+ " " +stars + "\n\n"
+                + '[' + customer.getId() + ']' + " " + customer.getName()+ " " +stars + "\n\n"
                 +comment;
     }
 }
